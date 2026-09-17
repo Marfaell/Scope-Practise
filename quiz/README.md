@@ -24,6 +24,15 @@ Otwórz `index.html` w przeglądarce albo wystaw katalog przez dowolny serwer st
 python3 -m http.server -d quiz 8000
 ```
 
+## Wierność wobec materiału źródłowego
+
+Treści pytań i wariantów odpowiedzi są przepisane dosłownie z materiału
+kursowego. Jedyne wprowadzone zmiany to poprawki literówek (np. `poźniej`,
+`skrzdło`, `prez`, `odpowidzi`, `miejsach`, `na skutej`) oraz interpunkcja.
+Sformułowania, które w oryginale są poprawnymi słowami — nawet użyte
+nietypowo, jak „loty z wizualizacją przestrzeni", „nim końcówka jest szersza"
+czy „max bezpieczną prędkość" — zostają bez zmian.
+
 ## Poprawianie klucza odpowiedzi
 
 Klucz nie był dołączony do pytań — został ustalony na podstawie wiedzy

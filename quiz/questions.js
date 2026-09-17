@@ -134,7 +134,7 @@ window.BANK = {
           w: 'Front to strefa styku dwóch mas powietrza różniących się temperaturą i wilgotnością.',
         },
         {
-          q: 'Po przejściu frontu ciepłego następuje:',
+          q: 'Po przejściu frontu cieplnego następuje:',
           o: [
             'poprawa pogody, zanikają opady, zwiększa się nasłonecznienie',
             'pogorszenie pogody, mogą pojawić się opady z nimbostratusa',
@@ -178,7 +178,7 @@ window.BANK = {
           w: 'Szybszy front chłodny dogania ciepły i wypycha ciepłe powietrze w górę — powstaje front zokludowany.',
         },
         {
-          q: 'Chmura Cb (cumulonimbus):',
+          q: 'Chmura cb:',
           o: [
             'powoduje gwałtowny opad',
             'towarzyszą jej silne prądy powietrzne',
@@ -200,7 +200,7 @@ window.BANK = {
           w: 'Ns to niska, gruba chmura warstwowa dająca ciągły opad — typowa dla frontu ciepłego.',
         },
         {
-          q: 'Chmura altus (Altostratus / Altocumulus):',
+          q: 'Chmura altus:',
           o: [
             'sygnalizuje gwałtowne pogorszenie pogody',
             'nie występuje w naszej strefie klimatycznej',
@@ -241,7 +241,7 @@ window.BANK = {
       icon: 'compass',
       q: [
         {
-          q: 'Godzina 1:00 czasu lokalnego latem w Polsce to:',
+          q: 'Godzina 1:00 czasu lokalnego latem w Polsce:',
           o: ['24:00 UTC dnia poprzedniego', '1:00 UTC', '11:00 UTC', '23:00 UTC dnia poprzedniego'],
           c: 3,
           w: 'Latem w Polsce obowiązuje UTC+2, więc 1:00 lokalnie = 23:00 UTC dnia poprzedniego.',
@@ -402,7 +402,7 @@ window.BANK = {
         },
         {
           q: 'Loty VFR to:',
-          o: ['loty nocne', 'loty w strefie', 'loty z widocznością przestrzeni', 'nie dotyczy paralotniarzy'],
+          o: ['loty nocne', 'loty w strefie', 'loty z wizualizacją przestrzeni', 'nie dotyczy paralotniarzy'],
           c: 2,
           w: 'VFR (Visual Flight Rules) — loty z widocznością ziemi i przestrzeni, prowadzone wizualnie.',
         },
@@ -469,7 +469,7 @@ window.BANK = {
           o: [
             'nie ma wpływu na prędkość paralotni',
             'może spowodować podwinięcie czołowe',
-            'stosujemy przy lądowaniu, aby wyhamować prędkość postępową paralotni',
+            'stosujemy przy lądowaniu aby wyhamować postępową paralotni',
             'zwiększa ryzyko wystąpienia podwinięć bocznych',
           ],
           c: 2,
@@ -519,8 +519,8 @@ window.BANK = {
           o: [
             'na paralotni nie występuje',
             'posiada stałą wartość dla danego profilu',
-            'jest tym większy, im końcówka skrzydła jest szersza',
-            'jest tym większy, im końcówka skrzydła jest węższa',
+            'jest tym większy nim końcówka skrzydła jest szersza',
+            'jest tym większy nim końcówka skrzydła jest węższa',
           ],
           c: 2,
           w: 'Opór indukowany powstaje na końcówkach skrzydła — im szersza końcówka (mniejsze wydłużenie), tym silniejsze wiry i większy opór.',
@@ -629,7 +629,7 @@ window.BANK = {
         },
         {
           q: 'W przypadku konieczności szybkiego wytracenia wysokości stosujemy:',
-          o: ['uszy', 'B-stall', 'spiralę', 'wszystkie odpowiedzi są prawidłowe'],
+          o: ['uszy', 'B-stall', 'spirala', 'wszystkie odpowiedzi są prawidłowe'],
           c: 3,
           w: 'To trzy podstawowe techniki szybkiego opadania, różniące się skutecznością i ryzykiem.',
         },
@@ -746,7 +746,7 @@ window.BANK = {
           q: 'Na przedstawionej biegunowej punkt C określa:',
           o: [
             'prędkość postępową, przy której paralotnia posiada najlepszą doskonałość',
-            'prędkość maksymalną bez użycia speeda',
+            "prędkość maksymalną bez użycia speed'a",
             'prędkość trymową',
             'prędkość preferowaną do manewru lądowania',
           ],
@@ -758,8 +758,8 @@ window.BANK = {
           q: 'Na przedstawionej biegunowej punkt D określa:',
           o: [
             'prędkość trymową paralotni',
-            'prędkość maksymalną paralotni z użyciem speeda i trymerów',
-            'maksymalną bezpieczną prędkość paralotni',
+            "prędkość maksymalną paralotni z użyciem speed'a i trymerów",
+            'max bezpieczną prędkość paralotni',
             'prędkość, przy której paralotnia traci strugi',
           ],
           c: 1,
@@ -834,7 +834,7 @@ window.BANK = {
           q: 'Pilot paralotni przed startem powinien:',
           o: [
             'sprawdzić, czy miejsce startu pozbawione jest przeszkód',
-            'sprawdzić, czy startowisko usytuowane jest pod wiatr',
+            'startowisko usytuowane jest pod wiatr',
             'sprawdzić, czy przestrzeń nad startowiskiem nie jest zajęta',
             'wszystkie odpowiedzi są prawidłowe',
           ],
@@ -842,7 +842,7 @@ window.BANK = {
           w: 'Przeszkody, wiatr i ruch nad startowiskiem to trzy elementy oceny przed każdym startem.',
         },
         {
-          q: 'Jaki z wymienionych dokumentów pilot paralotni powinien mieć przy sobie:',
+          q: 'Jakie z wymienionych dokumentów pilot paralotni powinien mieć przy sobie:',
           o: ['dowód osobisty', 'ubezpieczenie KL', 'świadectwo kwalifikacji', 'świadectwo lekarskie'],
           c: 2,
           w: 'Podczas lotów pilot ma przy sobie świadectwo kwalifikacji z ważnymi uprawnieniami.',
@@ -887,7 +887,7 @@ window.BANK = {
           q: 'Paralotnię należy przechowywać:',
           o: [
             'w stanie suchym, zaleca się okresowe wietrzenie',
-            'w miejscu nieeksponowanym na światło słoneczne',
+            'w miejscu nie wyeksponowanym na światło słoneczne',
             'w stanie luźnego złożenia, nie należy niepotrzebnie jej ugniatać',
             'wszystkie odpowiedzi są prawidłowe',
           ],
@@ -909,7 +909,7 @@ window.BANK = {
           q: 'Śmigło PPG lub PPGG zabezpieczamy pokrowcem ochronnym:',
           o: [
             'aby zabezpieczyć przed przypadkowym uszkodzeniem krawędzi',
-            'aby zabezpieczyć przed opadem deszczu i zakurzeniem',
+            'aby zabezpieczyć przed opadem deszczu i zakurzeniom',
             'śmigła węglowe i kompozytowe są wrażliwe na promieniowanie UV, a drewniane na wilgoć',
             'wszystkie odpowiedzi są prawidłowe',
           ],
@@ -974,7 +974,7 @@ window.BANK = {
         {
           q: 'Konserwacja i obsługa SIP polega na:',
           o: [
-            'wysuszeniu go na słońcu i ponownym rozłożeniu',
+            'wysuszeniu go na słońcu i ponownemu rozłożeniu',
             'przepraniu z dodatkiem płynu antyelektrostatycznego i wysuszeniu na słońcu',
             'regularnym wietrzeniu i składaniu wg instrukcji producenta',
             'okresowej wymianie olinowania',
