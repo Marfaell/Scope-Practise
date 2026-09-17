@@ -6,6 +6,7 @@
   var BANK = window.BANK;
   var ROUND_MIX = 20;
   var ROUND_FIX = 20;
+  var ROUND_EXAM = 40;
   var TIME_LIMIT = 90;
 
   /* ---------- dane ---------- */
@@ -33,6 +34,7 @@
     { id: 'wpisz', name: 'Pytanie i odpowiedź', sub: 'Wpisz odpowiedź, potem sprawdź poprawną', icon: 'keyboard' },
     { id: 'pf', name: 'Prawda czy fałsz', sub: 'Oceń, czy podana odpowiedź jest właściwa', icon: 'tf' },
     { id: 'czas', name: 'Na czas', sub: '90 sekund — ile zdążysz, tyle punktów', icon: 'timer' },
+    { id: 'egzamin', name: 'Egzamin', sub: 'Cała lista pytań, sprawdzenie na końcu', icon: 'list' },
   ];
   var MODE_BY_ID = {};
   MODES.forEach(function (m) { MODE_BY_ID[m.id] = m; });
@@ -53,7 +55,15 @@
       }
       if (S.session && (!S.session.order || !S.session.order.length)) S.session = null;
       if (S.session) S.session.order = S.session.order.filter(function (id) { return BY_ID[id]; });
-      if (S.session && S.session.i >= S.session.order.length) S.session = null;
+      if (S.session) {
+        if (!S.session.answers) S.session.answers = {};
+        if (!Array.isArray(S.session.miss)) S.session.miss = [];
+        S.session.miss = S.session.miss
+          .map(function (m) { return typeof m === 'string' ? { id: m, pick: null } : m; })
+          .filter(function (m) { return m && BY_ID[m.id]; });
+        if (!MODE_BY_ID[S.session.mode]) S.session = null;
+      }
+      if (S.session && S.session.mode !== 'egzamin' && S.session.i >= S.session.order.length) S.session = null;
     } catch (e) {
       S = { stats: {}, session: null };
     }
@@ -146,6 +156,7 @@
     tf: '<path d="M3 9l3 3 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 14l6 6M20 14l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
     timer: '<circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l2.5 2.5M9 2h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
     play: '<path d="M7 4l12 8-12 8z" fill="currentColor"/>',
+    list: '<path d="M4 6h1M4 12h1M4 18h1" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M9 6h11M9 12h11M9 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
     repair: '<path d="M12 3v6M12 15v.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>',
     mix: '<path d="M4 7h4l8 10h4M4 17h4l2-2.5M16 7h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 5l2 2-2 2M18 15l2 2-2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
     ok: '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -184,10 +195,8 @@
   function startSession(scope, mode) {
     var ids = shuffle(scopeIds(scope));
     if (!ids.length) return;
-    if (mode !== 'czas') {
-      var cap = scope === 'all' ? ROUND_MIX : ROUND_FIX;
-      ids = ids.slice(0, cap);
-    }
+    if (mode === 'egzamin') ids = ids.slice(0, ROUND_EXAM);
+    else if (mode !== 'czas') ids = ids.slice(0, scope === 'all' ? ROUND_MIX : ROUND_FIX);
     S.session = {
       scope: scope,
       mode: mode,
@@ -200,6 +209,7 @@
       pick: null,
       typed: '',
       claim: null,
+      answers: {},
       left: mode === 'czas' ? TIME_LIMIT : null,
     };
     if (mode === 'pf') prepClaim();
@@ -226,7 +236,12 @@
     var s = S.session;
     var q = current();
     score(q.id, good);
-    if (good) s.ok++; else { s.no++; if (s.miss.indexOf(q.id) < 0) s.miss.push(q.id); }
+    if (good) s.ok++;
+    else {
+      s.no++;
+      var already = s.miss.some(function (m) { return m.id === q.id; });
+      if (!already) s.miss.push({ id: q.id, pick: s.mode === 'abc' || s.mode === 'czas' ? s.pick : null });
+    }
     s.phase = 'shown';
     save();
     render();
@@ -243,6 +258,24 @@
       else return finish();
     }
     if (s.mode === 'pf') prepClaim();
+    save();
+    render();
+  }
+
+  function submitExam() {
+    var s = S.session;
+    var ok = 0, no = 0, miss = [];
+    s.order.forEach(function (id) {
+      var q = BY_ID[id];
+      var pick = typeof s.answers[id] === 'number' ? s.answers[id] : null;
+      var good = pick === q.c;
+      score(id, good);
+      if (good) ok++; else { no++; miss.push({ id: id, pick: pick }); }
+    });
+    V.summary = { scope: s.scope, mode: s.mode, ok: ok, no: no, miss: miss, total: s.order.length };
+    S.session = null;
+    V.view = 'summary';
+    stopTick();
     save();
     render();
   }
@@ -307,7 +340,9 @@
         '<span class="glyph">' + svg('play') + '</span>' +
         '<span class="tw-body"><span class="tw-title">Wróć do gry</span>' +
         '<span class="tw-sub">' + esc(MODE_BY_ID[s.mode].name) + ' · ' + esc(scopeName(s.scope)) +
-        (s.mode === 'czas' ? '' : ' · pytanie ' + (s.i + 1) + '/' + s.order.length) + '</span></span>' +
+        (s.mode === 'czas' ? '' : s.mode === 'egzamin'
+          ? ' · ' + examDone(s) + '/' + s.order.length + ' odpowiedzi'
+          : ' · pytanie ' + (s.i + 1) + '/' + s.order.length) + '</span></span>' +
         '<span class="chev">' + svg('chev') + '</span></button>';
     }
 
@@ -373,20 +408,24 @@
     var s = S.session;
     var q = current();
     var m = MODE_BY_ID[s.mode];
-    var right = s.mode === 'czas'
-      ? '<span class="timer mono" id="timer">' + s.left + ' s</span>'
-      : '<span class="badge-pct mono">' + s.ok + '/' + (s.ok + s.no) + '</span>';
+    var right;
+    if (s.mode === 'czas') right = '<span class="timer mono" id="timer">' + s.left + ' s</span>';
+    else if (s.mode === 'egzamin') right = '<span class="badge-pct mono" id="examcount">' + examDone(s) + '/' + s.order.length + '</span>';
+    else right = '<span class="badge-pct mono">' + s.ok + '/' + (s.ok + s.no) + '</span>';
     var h = topbar(m.name + ' · ' + scopeName(s.scope), { back: 'home', right: right });
     h += '<main class="page">';
 
-    if (s.mode === 'czas') {
+    if (s.mode === 'egzamin') {
+      h += '';
+    } else if (s.mode === 'czas') {
       h += '<div class="playbar"><span class="mono">' + s.ok + ' pkt</span>' + tape((s.left / TIME_LIMIT) * 100) + '</div>';
     } else {
       h += '<div class="playbar"><span class="mono">' + (s.i + 1) + '/' + s.order.length + '</span>' +
         tape((s.i / s.order.length) * 100) + '</div>';
     }
 
-    if (s.mode === 'fiszki') h += playFlash(q, s);
+    if (s.mode === 'egzamin') h += playExam(s);
+    else if (s.mode === 'fiszki') h += playFlash(q, s);
     else if (s.mode === 'wpisz') h += playTyped(q, s);
     else if (s.mode === 'pf') h += playTF(q, s);
     else h += playChoice(q, s);
@@ -486,6 +525,42 @@
     return h;
   }
 
+  function examDone(s) {
+    var n = 0;
+    s.order.forEach(function (id) { if (typeof s.answers[id] === 'number') n++; });
+    return n;
+  }
+
+  function examLabel(s) {
+    var left = s.order.length - examDone(s);
+    return left ? 'Sprawdź test · zostało ' + left : 'Sprawdź test';
+  }
+
+  function playExam(s) {
+    var h = '<div class="note">Odpowiedz na wszystkie pytania, a potem sprawdź cały test jednym przyciskiem. ' +
+      'Pytania bez odpowiedzi liczą się jako błędne. Możesz wyjść do menu — zaznaczenia zostaną zapisane.</div>';
+    h += '<ol class="exam">';
+    s.order.forEach(function (id, n) {
+      var q = BY_ID[id];
+      var pick = s.answers[id];
+      h += '<li class="exam-item' + (typeof pick === 'number' ? ' answered' : '') + '">' +
+        '<div class="qcard">' +
+        '<div class="qtopic">' + (n + 1) + ' / ' + s.order.length + ' · ' + esc(q.tname) + '</div>' +
+        '<div class="qtext">' + esc(q.q) + '</div>' +
+        (q.fig === 'polar' ? polarFig() : '') +
+        '<div class="opts" style="margin-top:14px">';
+      q.o.forEach(function (o, i) {
+        h += '<button class="opt' + (pick === i ? ' is-pick' : '') + '" data-act="exam-pick" data-q="' + id + '" data-i="' + i + '">' +
+          '<span class="key">' + 'ABCD'[i] + '</span><span>' + esc(o) + '</span></button>';
+      });
+      h += '</div></div></li>';
+    });
+    h += '</ol>';
+    h += '<div class="exam-bar"><button class="btn btn-primary btn-full" id="examsubmit" data-act="exam-submit">' +
+      esc(examLabel(s)) + '</button></div>';
+    return h;
+  }
+
   function ring(pct) {
     var r = 44, c = 2 * Math.PI * r;
     return '<svg class="ring" viewBox="0 0 104 104">' +
@@ -507,9 +582,12 @@
 
     if (r.miss.length) {
       h += '<div class="section"><h2 class="h-sec">Do powtórki (' + r.miss.length + ')</h2>';
-      r.miss.forEach(function (id) {
-        var q = BY_ID[id];
-        h += '<div class="miss"><div class="m-q">' + esc(q.q) + '</div>' +
+      r.miss.forEach(function (m) {
+        var q = BY_ID[m.id];
+        var mine = '';
+        if (typeof m.pick === 'number') mine = '<div class="m-mine">Twoja: ' + 'ABCD'[m.pick] + ') ' + esc(q.o[m.pick]) + '</div>';
+        else if (m.pick === null && r.mode === 'egzamin') mine = '<div class="m-mine">Bez odpowiedzi</div>';
+        h += '<div class="miss"><div class="m-q">' + esc(q.q) + '</div>' + mine +
           '<div class="m-a">' + 'ABCD'[q.c] + ') ' + esc(q.o[q.c]) + '</div>' +
           '<div class="m-w">' + esc(q.w) + '</div></div>';
       });
@@ -579,6 +657,24 @@
       if (s.mode === 'czas') setTimeout(function () { if (S.session && V.view === 'play') next(); }, 850);
       return;
     }
+    if (act === 'exam-pick') {
+      if (!s) return;
+      var eqid = el.getAttribute('data-q');
+      var eidx = parseInt(el.getAttribute('data-i'), 10);
+      s.answers[eqid] = eidx;
+      var box = el.parentElement;
+      Array.prototype.forEach.call(box.querySelectorAll('.opt'), function (b) { b.classList.remove('is-pick'); });
+      el.classList.add('is-pick');
+      var item = el.closest('.exam-item');
+      if (item) item.classList.add('answered');
+      var btn = document.getElementById('examsubmit');
+      if (btn) btn.textContent = examLabel(s);
+      var cnt = document.getElementById('examcount');
+      if (cnt) cnt.textContent = examDone(s) + '/' + s.order.length;
+      save();
+      return;
+    }
+    if (act === 'exam-submit') { if (s) submitExam(); return; }
     if (act === 'flip') {
       if (!s) return;
       if (s.phase === 'ask') { s.phase = 'flip'; render(); }
@@ -607,10 +703,10 @@
 
     if (act === 'again') { startSession(V.summary.scope, V.summary.mode); return; }
     if (act === 'redo-miss') {
-      var ids = V.summary.miss.slice();
+      var ids = V.summary.miss.map(function (m) { return m.id; });
       S.session = {
         scope: V.summary.scope, mode: V.summary.mode, order: shuffle(ids), i: 0, ok: 0, no: 0,
-        miss: [], phase: 'ask', pick: null, typed: '', claim: null,
+        miss: [], phase: 'ask', pick: null, typed: '', claim: null, answers: {},
         left: V.summary.mode === 'czas' ? TIME_LIMIT : null,
       };
       if (S.session.mode === 'pf') prepClaim();

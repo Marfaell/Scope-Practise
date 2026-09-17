@@ -429,6 +429,8 @@ button { font: inherit; color: inherit; }
 .opt.is-right .key { background: var(--good); color: var(--surface); }
 .opt.is-wrong { border-color: var(--bad); background: var(--bad-soft); }
 .opt.is-wrong .key { background: var(--bad); color: var(--surface); }
+.opt.is-pick { border-color: var(--accent); background: var(--accent-soft); }
+.opt.is-pick .key { background: var(--accent); color: var(--on-accent); }
 .opt.locked { cursor: default; }
 .opt.dim { opacity: 0.5; }
 
@@ -587,8 +589,30 @@ button { font: inherit; color: inherit; }
   gap: 5px;
 }
 .miss .m-q { font-weight: 700; font-size: 15px; line-height: 1.35; }
+.miss .m-mine { font-size: 14.5px; line-height: 1.4; color: var(--bad); }
 .miss .m-a { font-size: 14.5px; line-height: 1.4; color: var(--good); }
 .miss .m-w { font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+
+/* ---------- egzamin ---------- */
+.exam {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.exam-item .qcard { transition: border-color 0.15s ease; }
+.exam-item.answered .qcard { border-color: var(--accent); }
+
+.exam-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  margin: 0 -16px -28px;
+  padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, var(--bg) 62%, transparent);
+}
 
 /* ---------- misc ---------- */
 .note {

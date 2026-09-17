@@ -1,7 +1,10 @@
 # Trener paralotniowy
 
 Aplikacja do nauki na świadectwo kwalifikacji pilota paralotni.
-100 pytań w 10 tematach, pięć trybów ćwiczeń, zapis postępu w przeglądarce.
+100 pytań w 10 tematach, sześć trybów ćwiczeń, zapis postępu w przeglądarce.
+
+Tryby: Test ABCD · Fiszki · Pytanie i odpowiedź · Prawda/Fałsz · Na czas (90 s) ·
+Egzamin (cała lista pytań, sprawdzenie jednym przyciskiem na końcu).
 
 ## Pliki
 
@@ -48,5 +51,6 @@ prawidłowe” muszą zostawać na swoich miejscach. Losowana jest kolejność p
 * Pytanie jest **opanowane** po dwóch poprawnych odpowiedziach z rzędu.
 * Błędna odpowiedź wrzuca pytanie do listy **do poprawki** aż do następnej
   poprawnej odpowiedzi.
+* W trybie egzaminu pytanie bez zaznaczonej odpowiedzi liczy się jako błędne.
 * Postęp i przerwana runda siedzą w `localStorage` pod kluczem
   `paralotnia.trener.v1`; przycisk „Wyzeruj postęp” czyści wszystko.
