@@ -172,20 +172,63 @@
 
   /* wykres biegunowej — rysunek do pytań o punkty A–D */
   function polarFig() {
+    var ln = 'stroke:var(--line)';
+    var hint = 'stroke:var(--sky)';
     return (
-      '<div class="fig"><svg viewBox="0 0 320 180" role="img" aria-label="Biegunowa prędkości paralotni z zaznaczonymi punktami A, B, C i D">' +
-      '<line x1="40" y1="26" x2="310" y2="26" style="stroke:var(--line)" stroke-width="1"/>' +
-      '<line x1="40" y1="26" x2="40" y2="162" style="stroke:var(--line)" stroke-width="1"/>' +
-      '<line x1="40" y1="26" x2="300" y2="142" style="stroke:var(--sky);stroke-dasharray:4 4" stroke-width="1.2"/>' +
-      '<path d="M53 91 C75 79 88 77 105 78 C130 79 148 82 163 85 C200 95 250 120 280 144" fill="none" style="stroke:var(--accent)" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<div class="fig"><svg viewBox="0 0 360 232" role="img" aria-label="Biegunowa paralotni: oś pozioma to prędkość, oś pionowa w dół to opadanie. Punkt A leży przy prędkości minimalnej, B w szczycie krzywej przy najmniejszym opadaniu, C w punkcie styczności prostej poprowadzonej z początku układu, D na prawym końcu krzywej przy prędkości maksymalnej. Pod wykresem strzałki zasięgu lotu dla punktów A, B i C.">' +
+
+      /* proste z początku układu — porównanie zasięgu */
+      '<g style="' + ln + '" stroke-width="0.8" fill="none">' +
+      '<path d="M56 38 L119 160"/><path d="M56 38 L204 160"/><path d="M56 38 L291 160"/>' +
+      '</g>' +
+
+      /* osie */
+      '<path d="M56 38 H286" style="' + ln + '" stroke-width="1.4" fill="none"/>' +
+      '<path d="M282 34.5 L288 38 L282 41.5 Z" style="fill:var(--line)"/>' +
+      '<path d="M56 30 V190" style="' + ln + '" stroke-width="1.4" fill="none"/>' +
+
+      /* linie odniesienia do punktów */
+      '<g style="' + hint + ';stroke-dasharray:3 3" stroke-width="0.9" fill="none">' +
+      '<path d="M88 38 V100"/><path d="M112 38 V84"/><path d="M160 38 V92"/><path d="M248 38 V158"/>' +
+      '<path d="M56 84 H112"/>' +
+      '</g>' +
+
+      /* biegunowa */
+      '<path d="M88 100 C95 90 104 84 112 84 C126 85 146 88 160 92 C190 102 228 136 248 158" ' +
+      'fill="none" style="stroke:var(--accent)" stroke-width="2.6" stroke-linecap="round"/>' +
+
+      /* punkty */
       '<g style="fill:var(--ink)">' +
-      '<circle cx="53" cy="91" r="4.5"/><circle cx="105" cy="78" r="4.5"/><circle cx="163" cy="85" r="4.5"/><circle cx="280" cy="144" r="4.5"/>' +
+      '<circle cx="88" cy="100" r="3.6"/><circle cx="112" cy="84" r="3.6"/>' +
+      '<circle cx="160" cy="92" r="3.6"/><circle cx="248" cy="158" r="3.6"/>' +
       '</g>' +
-      '<g style="fill:var(--ink)" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">' +
-      '<text x="45" y="106">A</text><text x="99" y="70">B</text><text x="157" y="77">C</text><text x="272" y="162">D</text>' +
+      '<g style="fill:var(--ink)" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600">' +
+      '<text x="76" y="112">A</text><text x="100" y="78">B</text>' +
+      '<text x="164" y="86">C</text><text x="254" y="156">D</text>' +
       '</g>' +
-      '<g style="fill:var(--muted)" font-family="IBM Plex Mono, monospace" font-size="9.5" letter-spacing="1">' +
-      '<text x="238" y="20">PRĘDKOŚĆ →</text><text x="4" y="100">OPAD.</text><text x="4" y="112">↓</text>' +
+
+      /* opisy osi */
+      '<g style="fill:var(--muted)" font-family="IBM Plex Mono, monospace" font-size="9">' +
+      '<text x="88" y="29" text-anchor="middle">V<tspan font-size="6.5" dy="2">min</tspan></text>' +
+      '<text x="114" y="29" text-anchor="middle">V<tspan font-size="6.5" dy="2">ek</tspan></text>' +
+      '<text x="160" y="29" text-anchor="middle">V<tspan font-size="6.5" dy="2">opt</tspan></text>' +
+      '<text x="248" y="29" text-anchor="middle">V<tspan font-size="6.5" dy="2">max</tspan></text>' +
+      '<text x="292" y="41">Prędkość [V]</text>' +
+      '<text x="26" y="87">W<tspan font-size="6.5" dy="2">min</tspan></text>' +
+      '<text transform="translate(18 158) rotate(-90)" text-anchor="middle">Opadanie [W]</text>' +
+      '</g>' +
+
+      /* zasięg lotu */
+      '<g stroke-width="1.6" fill="none">' +
+      '<path d="M56 172 H286" style="' + hint + '"/><path d="M282 168.5 L288 172 L282 175.5 Z" style="fill:var(--sky);stroke:none"/>' +
+      '<path d="M56 182 H201" style="stroke:var(--accent)"/><path d="M197 178.5 L203 182 L197 185.5 Z" style="fill:var(--accent);stroke:none"/>' +
+      '<path d="M56 192 H118" style="stroke:var(--muted)"/><path d="M114 188.5 L120 192 L114 195.5 Z" style="fill:var(--muted);stroke:none"/>' +
+      '</g>' +
+      '<g font-family="IBM Plex Mono, monospace" font-size="9" font-weight="600">' +
+      '<text x="292" y="175" style="fill:var(--sky)">C</text>' +
+      '<text x="207" y="185" style="fill:var(--accent)">B</text>' +
+      '<text x="124" y="195" style="fill:var(--muted)">A</text>' +
+      '<text x="171" y="212" style="fill:var(--muted)" font-weight="500" text-anchor="middle">Zasięg lotu</text>' +
       '</g>' +
       '</svg></div>'
     );

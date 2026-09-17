@@ -24,6 +24,15 @@ Otwórz `index.html` w przeglądarce albo wystaw katalog przez dowolny serwer st
 python3 -m http.server -d quiz 8000
 ```
 
+## Wykres biegunowej
+
+Cztery pytania o punkty A–D odwołują się do wykresu, który aplikacja rysuje
+sama (`polarFig()` w `app.js`). Rysunek odwzorowuje grafikę z kursu: oś
+prędkości u góry z V_min, V_ek, V_opt i V_max, oś opadania w dół z W_min,
+proste z początku układu i strzałki zasięgu lotu dla punktów A, B i C.
+Długości strzałek wynikają z doskonałości w tych punktach, więc C jest
+najdłuższa, a A najkrótsza.
+
 ## Wierność wobec materiału źródłowego
 
 Treści pytań i wariantów odpowiedzi są przepisane dosłownie z materiału
