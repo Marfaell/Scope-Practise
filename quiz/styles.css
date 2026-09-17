@@ -441,14 +441,14 @@ button { font: inherit; color: inherit; }
 }
 .flip-in {
   position: relative;
+  display: grid;
   transform-style: preserve-3d;
   transition: transform 0.5s cubic-bezier(0.3, 1, 0.4, 1);
-  min-height: 210px;
+  min-height: 190px;
 }
 .flip.on .flip-in { transform: rotateY(180deg); }
 .flip-face {
-  position: absolute;
-  inset: 0;
+  grid-area: 1 / 1 / 2 / 2;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   display: flex;
@@ -460,7 +460,6 @@ button { font: inherit; color: inherit; }
   border: 1px solid var(--line);
   background: var(--surface);
   box-shadow: var(--shadow);
-  overflow: auto;
 }
 .flip-face.back {
   transform: rotateY(180deg);
@@ -538,13 +537,39 @@ button { font: inherit; color: inherit; }
 .verdict.no { color: var(--bad); }
 .verdict svg { width: 20px; height: 20px; }
 
-/* true / false */
-.tf-claim {
-  border-left: 3px solid var(--sky);
-  padding: 4px 0 4px 12px;
-  margin-top: 12px;
-  font-size: 16.5px;
-  line-height: 1.4;
+/* lista wariantów pokazywana razem z kluczem */
+.ansopts {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 3px 0 6px;
+}
+.ansopts.plain { margin-top: 12px; }
+.ansopt {
+  display: flex;
+  gap: 9px;
+  font-size: 14.5px;
+  line-height: 1.36;
+  font-weight: 400;
+  color: var(--muted);
+}
+.ansopt b {
+  flex: none;
+  min-width: 13px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ansopt.key { color: var(--ink); font-weight: 700; }
+.ansopt.key b { color: var(--good); }
+
+/* prawda / fałsz — teza jako samodzielne zdanie */
+.tf-stmt {
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.34;
+  letter-spacing: -0.015em;
 }
 
 /* timer */

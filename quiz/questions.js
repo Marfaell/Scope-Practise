@@ -242,6 +242,7 @@ window.BANK = {
       q: [
         {
           q: 'Godzina 1:00 czasu lokalnego latem w Polsce:',
+          tf: false,
           o: ['24:00 UTC dnia poprzedniego', '1:00 UTC', '11:00 UTC', '23:00 UTC dnia poprzedniego'],
           c: 3,
           w: 'Latem w Polsce obowiązuje UTC+2, więc 1:00 lokalnie = 23:00 UTC dnia poprzedniego.',
@@ -259,12 +260,14 @@ window.BANK = {
         },
         {
           q: 'Jaki kierunek określany jest jako SE:',
+          tf: false,
           o: ['095', '315', '045', '135'],
           c: 3,
           w: 'Południowy wschód to 135°. 045° = NE, 315° = NW.',
         },
         {
           q: 'Jaki kierunek określany jest jako NW:',
+          tf: false,
           o: ['315', '295', '335', '205'],
           c: 0,
           w: 'Północny zachód to 315°.',
@@ -379,6 +382,7 @@ window.BANK = {
         },
         {
           q: 'Jakie warunki powinien spełniać kandydat do szkolenia paralotniowego:',
+          tf: false,
           o: [
             'powinien być pełnoletni',
             'nie ma ograniczeń wiekowych',
@@ -488,6 +492,7 @@ window.BANK = {
         },
         {
           q: 'Co się dzieje, gdy spada gęstość powietrza (np. z wysokością):',
+          tf: false,
           o: [
             'siła nośna skrzydła maleje',
             'siła nośna skrzydła rośnie',
@@ -590,6 +595,7 @@ window.BANK = {
         },
         {
           q: 'W trakcie lotu prawa część paralotni ulega podwinięciu:',
+          tf: false,
           o: [
             'natychmiast uruchamiamy SIP',
             'nie reagujemy, paralotnia samoczynnie wyjdzie z sytuacji niebezpiecznej',
@@ -635,6 +641,7 @@ window.BANK = {
         },
         {
           q: 'Podczas startu w fazie rozbiegu środkowa część czaszy jest cofnięta:',
+          tf: false,
           o: [
             'lekko przyhamowujemy paralotnię i kontynuujemy rozbieg',
             'natychmiast przerywamy start',
@@ -787,6 +794,7 @@ window.BANK = {
         },
         {
           q: 'Jakie czynności serwisowe zalecają producenci SIP:',
+          tf: false,
           o: [
             'kontrolę, wietrzenie, przekładanie w regularnych odstępach',
             'raz w roku kontrolne uruchomienie w locie',
@@ -843,6 +851,7 @@ window.BANK = {
         },
         {
           q: 'Jakie z wymienionych dokumentów pilot paralotni powinien mieć przy sobie:',
+          tf: false,
           o: ['dowód osobisty', 'ubezpieczenie KL', 'świadectwo kwalifikacji', 'świadectwo lekarskie'],
           c: 2,
           w: 'Podczas lotów pilot ma przy sobie świadectwo kwalifikacji z ważnymi uprawnieniami.',
@@ -896,6 +905,7 @@ window.BANK = {
         },
         {
           q: 'Skrzydło należy składać komorami:',
+          tf: false,
           o: [
             'przeciwdziała się w ten sposób zagnieceniom sztywników',
             'w szczególności te, które są wyposażone w żyłkowe usztywnienia',
@@ -962,6 +972,7 @@ window.BANK = {
         },
         {
           q: 'Kiedy należy przygotować mieszankę do silnika dwusuwowego:',
+          tf: false,
           o: [
             'nie ma specjalnych zaleceń',
             'najlepiej wymieszać z 3-miesięcznym wyprzedzeniem',

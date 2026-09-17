@@ -22,6 +22,7 @@
         c: q.c,
         w: q.w,
         fig: q.fig || null,
+        tf: q.tf !== false,
       });
     });
   });
@@ -32,7 +33,7 @@
     { id: 'abc', name: 'Test ABCD', sub: 'Wybierz jedną z czterech odpowiedzi', icon: 'abc' },
     { id: 'fiszki', name: 'Fiszki', sub: 'Odsłoń odpowiedź i oceń się sam', icon: 'cards' },
     { id: 'wpisz', name: 'Pytanie i odpowiedź', sub: 'Wpisz odpowiedź, potem sprawdź poprawną', icon: 'keyboard' },
-    { id: 'pf', name: 'Prawda czy fałsz', sub: 'Oceń, czy podana odpowiedź jest właściwa', icon: 'tf' },
+    { id: 'pf', name: 'Prawda czy fałsz', sub: 'Oceń, czy pojedyncze zdanie jest prawdziwe', icon: 'tf' },
     { id: 'czas', name: 'Na czas', sub: '90 sekund — ile zdążysz, tyle punktów', icon: 'timer' },
     { id: 'egzamin', name: 'Egzamin', sub: 'Cała lista pytań, sprawdzenie na końcu', icon: 'list' },
   ];
@@ -146,6 +147,39 @@
     return ALL.filter(function (q) { return q.tid === scope; }).map(function (q) { return q.id; });
   }
 
+  /* Warianty typu „wszystkie odpowiedzi są…” nie są samodzielnymi zdaniami. */
+  function isMeta(t) {
+    return /wszystkie odpowiedzi są|wszystkie wyżej wymienione|żadna (z odpowiedzi|odpowiedź)/i.test(t);
+  }
+
+  function metaKind(t) {
+    if (!isMeta(t)) return null;
+    return /nieprawidłowe|fałszywe|żadna/i.test(t) ? 'all-false' : 'all-true';
+  }
+
+  /* Czy wariant i jest prawdziwy — z uwzględnieniem klucza zbiorczego. */
+  function claimTruth(q, i) {
+    var k = metaKind(q.o[q.c]);
+    if (k === 'all-true') return true;
+    if (k === 'all-false') return false;
+    return i === q.c;
+  }
+
+  /* Sklejenie trzonu pytania z wariantem w jedno zdanie oznajmujące. */
+  function statementOf(q, i) {
+    var stem = q.q.replace(/\s*:\s*$/, '');
+    var opt = q.o[i];
+    if (/^[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]/.test(opt)) opt = opt.charAt(0).toLowerCase() + opt.slice(1);
+    var out = stem + ' ' + opt;
+    return /[.!?]$/.test(out) ? out : out + '.';
+  }
+
+  function poolFor(scope, mode) {
+    var ids = scopeIds(scope);
+    if (mode === 'pf') ids = ids.filter(function (id) { return BY_ID[id].tf; });
+    return ids;
+  }
+
   var ICON = {
     back: '<path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
     chev: '<path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -236,7 +270,7 @@
 
   /* ---------- sesja ---------- */
   function startSession(scope, mode) {
-    var ids = shuffle(scopeIds(scope));
+    var ids = shuffle(poolFor(scope, mode));
     if (!ids.length) return;
     if (mode === 'egzamin') ids = ids.slice(0, ROUND_EXAM);
     else if (mode !== 'czas') ids = ids.slice(0, scope === 'all' ? ROUND_MIX : ROUND_FIX);
@@ -264,13 +298,12 @@
   function prepClaim() {
     var s = S.session;
     var q = BY_ID[s.order[s.i]];
-    var truth = Math.random() < 0.5;
-    var idx = q.c;
-    if (!truth) {
-      var others = [0, 1, 2, 3].filter(function (n) { return n !== q.c; });
-      idx = others[Math.floor(Math.random() * others.length)];
-    }
-    s.claim = { idx: idx, truth: idx === q.c };
+    var cands = [0, 1, 2, 3].filter(function (i) { return !isMeta(q.o[i]); });
+    var want = Math.random() < 0.5;
+    var match = cands.filter(function (i) { return claimTruth(q, i) === want; });
+    var pool = match.length ? match : cands;
+    var idx = pool[Math.floor(Math.random() * pool.length)];
+    s.claim = { idx: idx, truth: claimTruth(q, idx) };
   }
 
   function current() { return BY_ID[S.session.order[S.session.i]]; }
@@ -428,10 +461,12 @@
     h += '<div><p class="eyebrow">' + pool + ' pytań w puli</p><h1 class="h-hero">Jak chcesz ćwiczyć?</h1></div>';
     h += '<div class="section">';
     MODES.forEach(function (m) {
-      h += '<button class="tile-wide" data-act="mode" data-id="' + m.id + '">' +
+      var n = poolFor(scope, m.id).length;
+      var off = n === 0;
+      h += '<button class="tile-wide' + (off ? ' mute' : '') + '" data-act="' + (off ? 'noop' : 'mode') + '" data-id="' + m.id + '"' + (off ? ' disabled' : '') + '>' +
         '<span class="glyph">' + svg(m.icon) + '</span>' +
         '<span class="tw-body"><span class="tw-title">' + esc(m.name) + '</span>' +
-        '<span class="tw-sub">' + esc(m.sub) + '</span></span>' +
+        '<span class="tw-sub">' + (off ? 'Brak pytań nadających się do tego trybu' : esc(m.sub) + (m.id === 'pf' ? ' · ' + n + ' pytań' : '')) + '</span></span>' +
         '<span class="chev">' + svg('chev') + '</span></button>';
     });
     h += '</div>';
@@ -482,9 +517,18 @@
       (q.fig === 'polar' ? polarFig() : '');
   }
 
-  function why(q) {
-    return '<div class="reveal"><span class="lab">Poprawna odpowiedź</span>' +
-      '<span class="val">' + 'ABCD'[q.c] + ') ' + esc(q.o[q.c]) + '</span>' +
+  function optList(q) {
+    var h = '<div class="ansopts">';
+    q.o.forEach(function (o, i) {
+      h += '<div class="ansopt' + (i === q.c ? ' key' : '') + '">' +
+        '<b>' + 'ABCD'[i] + '</b><span>' + esc(o) + '</span></div>';
+    });
+    return h + '</div>';
+  }
+
+  function answerBlock(q, lab) {
+    return '<div class="reveal"><span class="lab">' + esc(lab || 'Pytanie i klucz') + '</span>' +
+      '<span class="val">' + esc(q.q) + '</span>' + optList(q) +
       '<span class="why">' + esc(q.w) + '</span></div>';
   }
 
@@ -519,6 +563,9 @@
       '<div class="flip-face"><div class="qtopic">' + esc(q.tname) + '</div>' +
       '<div class="qtext">' + esc(q.q) + '</div>' +
       (q.fig === 'polar' ? polarFig() : '') +
+      '<div class="ansopts plain">' + q.o.map(function (o, i) {
+        return '<div class="ansopt"><b>' + 'ABCD'[i] + '</b><span>' + esc(o) + '</span></div>';
+      }).join('') + '</div>' +
       '<div class="flip-hint">Dotknij, aby odsłonić</div></div>' +
       '<div class="flip-face back"><div class="flip-q">' + esc(q.q) + '</div>' +
       '<div class="flip-hint">Poprawna odpowiedź</div>' +
@@ -543,7 +590,7 @@
     } else {
       h += '<div class="reveal"><span class="lab">Twoja odpowiedź</span>' +
         '<span class="val" style="font-weight:400">' + (s.typed ? esc(s.typed) : '<i>brak odpowiedzi</i>') + '</span></div>';
-      h += why(q);
+      h += answerBlock(q, 'Poprawna odpowiedź');
       h += '<div class="btn-row"><button class="btn btn-bad" data-act="grade" data-g="0">Pomyłka</button>' +
         '<button class="btn btn-good" data-act="grade" data-g="1">Miałem rację</button></div>';
     }
@@ -552,17 +599,18 @@
 
   function playTF(q, s) {
     var locked = s.phase === 'shown';
-    var h = '<div class="qcard pop">' + qhead(q) +
-      '<div class="tf-claim">' + esc(q.o[s.claim.idx]) + '</div></div>';
+    var h = '<div class="qcard pop"><div class="qtopic">' + esc(q.tname) + '</div>' +
+      '<div class="tf-stmt">' + esc(statementOf(q, s.claim.idx)) + '</div>' +
+      (q.fig === 'polar' ? polarFig() : '') + '</div>';
     if (!locked) {
       h += '<div class="btn-row"><button class="btn btn-bad" data-act="tf" data-g="0">Fałsz</button>' +
         '<button class="btn btn-good" data-act="tf" data-g="1">Prawda</button></div>';
-      h += '<div class="note">Czy zaproponowana wyżej odpowiedź jest poprawną odpowiedzią na to pytanie?</div>';
+      h += '<div class="note">Oceń, czy powyższe zdanie jest prawdziwe.</div>';
     } else {
       var good = s.pick === s.claim.truth;
       h += '<div class="verdict ' + (good ? 'ok' : 'no') + '">' + svg(good ? 'ok' : 'no') +
-        (good ? 'Dobrze!' : 'Niestety, nie') + '</div>';
-      h += why(q);
+        (good ? 'Dobrze — ' : 'Niestety — ') + (s.claim.truth ? 'to prawda' : 'to fałsz') + '</div>';
+      h += answerBlock(q, 'Pytanie źródłowe');
       h += '<button class="btn btn-primary btn-full" data-act="next">Dalej</button>';
     }
     return h;

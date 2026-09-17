@@ -6,6 +6,25 @@ Aplikacja do nauki na świadectwo kwalifikacji pilota paralotni.
 Tryby: Test ABCD · Fiszki · Pytanie i odpowiedź · Prawda/Fałsz · Na czas (90 s) ·
 Egzamin (cała lista pytań, sprawdzenie jednym przyciskiem na końcu).
 
+## Materiał jednokrotnego wyboru a tryby rozkładające pytanie
+
+W 34 pytaniach kluczem jest wariant zbiorczy („wszystkie odpowiedzi są
+prawidłowe/fałszywe"). Wyrwany z kontekstu pojedynczy wariant takiego pytania
+jest bez sensu, dlatego:
+
+* **Prawda/Fałsz** nie pyta „czy to poprawna odpowiedź", tylko skleja trzon
+  pytania z wariantem w jedno zdanie oznajmujące i pyta, czy jest prawdziwe.
+  Wartość logiczną wyznacza klucz: przy kluczu „wszystkie prawidłowe" każdy
+  wariant jest prawdą, przy „wszystkie fałszywe" — fałszem, inaczej prawdziwy
+  jest tylko wariant kluczowy. Warianty zbiorcze nigdy nie są tezą.
+* Pytania, których trzonu nie da się skleić w zdanie (pytajniki typu „Jaki
+  kierunek…", opisy sytuacji), mają w `questions.js` pole **`tf: false`** i są
+  pomijane w tym trybie. Obecnie jest ich 11, więc w puli zostaje 89 pytań.
+* Po każdej odpowiedzi pokazywane jest **pytanie źródłowe z wszystkimi czterema
+  wariantami** i zaznaczonym kluczem — kontekst wraca.
+* **Fiszki** pokazują warianty już na awersie (fiszka do jednokrotnego wyboru),
+  a **tryb pisany** odsłania po sprawdzeniu pełne pytanie z wariantami.
+
 ## Pliki
 
 | plik | rola |
