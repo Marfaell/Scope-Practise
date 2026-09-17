@@ -810,8 +810,8 @@ window.BANK = {
         {
           q: 'Lądowanie na zboczu wykonujemy:',
           o: ['zawsze pod wiatr', 'pod stok', 'zgodnie ze spadkiem stoku', 'w poprzek stoku'],
-          c: 1,
-          w: 'Na zboczu lądujemy „pod stok”, czyli w górę zbocza — wznoszący teren skraca dobieg i wytraca prędkość.',
+          c: 3,
+          w: 'Na zboczu lądujemy w poprzek stoku, czyli wzdłuż warstwicy. Podejście prosto pod górę wprowadza skrzydło w podnoszący się teren, a zgodnie ze spadkiem — w teren uciekający spod nóg.',
         },
         {
           q: 'Na podejściu do lądowania:',
