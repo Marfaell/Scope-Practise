@@ -110,6 +110,8 @@
     return S.stats[id];
   }
   function mastered(id) { var s = S.stats[id]; return !!s && s.streak >= 2; }
+  /* „Umiem” — ostatnia odpowiedź na to pytanie była poprawna. Rusza się od razu. */
+  function known(id) { var s = S.stats[id]; return !!s && !s.bad && s.ok > 0; }
   function isBad(id) { var s = S.stats[id]; return !!s && s.bad; }
 
   function score(id, good) {
@@ -120,26 +122,34 @@
   }
 
   function topicStats(t) {
-    var done = 0, bad = 0;
+    var done = 0, kn = 0, bad = 0;
     t.q.forEach(function (_, i) {
       var id = t.id + '-' + (i + 1);
       if (mastered(id)) done++;
+      if (known(id)) kn++;
       if (isBad(id)) bad++;
     });
-    return { done: done, total: t.q.length, bad: bad, pct: Math.round((done / t.q.length) * 100) };
+    var n = t.q.length;
+    return {
+      done: done, known: kn, total: n, bad: bad,
+      pct: Math.round((kn / n) * 100),
+      pctDone: Math.round((done / n) * 100),
+    };
   }
 
   function globalStats() {
-    var done = 0, bad = 0, ok = 0, no = 0;
+    var done = 0, kn = 0, bad = 0, ok = 0, no = 0;
     ALL.forEach(function (q) {
       if (mastered(q.id)) done++;
+      if (known(q.id)) kn++;
       if (isBad(q.id)) bad++;
       var s = S.stats[q.id];
       if (s) { ok += s.ok; no += s.no; }
     });
     return {
-      done: done, total: ALL.length, bad: bad,
-      pct: Math.round((done / ALL.length) * 100),
+      done: done, known: kn, total: ALL.length, bad: bad,
+      pct: Math.round((kn / ALL.length) * 100),
+      pctDone: Math.round((done / ALL.length) * 100),
       acc: ok + no ? Math.round((ok / (ok + no)) * 100) : 0,
       answered: ok + no,
     };
@@ -229,8 +239,12 @@
     return '<svg viewBox="0 0 24 24" class="' + (cls || '') + '" aria-hidden="true">' + ICON[name] + '</svg>';
   }
 
-  function tape(pct) {
-    return '<div class="tape"><i style="width:' + Math.max(0, Math.min(100, pct)) + '%"></i></div>';
+  /* tape(a) — jednolity pasek; tape(a, b) — jasny do a, pełny do b. */
+  function tape(a, b) {
+    var lim = function (v) { return Math.max(0, Math.min(100, v)); };
+    if (b === undefined) b = a;
+    return '<div class="tape"><i style="width:' + lim(a) + '%"></i>' +
+      '<u style="width:' + lim(b) + '%"></u></div>';
   }
 
   /* wykres biegunowej — rysunek do pytań o punkty A–D */
@@ -426,6 +440,7 @@
     var g = globalStats();
     var h = '';
     h += topbar('Trener paralotniowy', { right: '<span class="badge-pct mono">' + g.pct + '%</span>' });
+    /* g.pct liczy „umiem”; g.pctDone (opanowane) jest ciemniejszą częścią paska */
     h += '<main class="page">';
 
     h += '<div><p class="eyebrow">Świadectwo kwalifikacji pilota paralotni</p>' +
@@ -436,11 +451,11 @@
     h += warnBox();
 
     h += '<div class="stats">' +
-      '<div class="v-good"><b class="mono">' + g.done + '</b><span>opanowane</span></div>' +
+      '<div class="v-good"><b class="mono">' + g.known + '</b><span>umiem</span></div>' +
       '<div><b class="mono">' + g.acc + '%</b><span>skuteczność</span></div>' +
       '<div class="v-bad"><b class="mono">' + g.bad + '</b><span>do poprawki</span></div>' +
       '</div>';
-    h += tape(g.pct);
+    h += tape(g.pct, g.pctDone);
 
     if (S.session) {
       var s = S.session;
@@ -459,9 +474,9 @@
       var ts = topicStats(t);
       h += '<button class="tile' + (ts.done === ts.total ? ' done' : '') + '" data-act="topic" data-id="' + t.id + '">' +
         '<span class="t-name">' + esc(t.short) + '</span>' +
-        '<span class="t-meta"><span class="mono">' + ts.done + '/' + ts.total + '</span>' +
+        '<span class="t-meta"><span class="mono">' + ts.known + '/' + ts.total + ' umiem</span>' +
         (ts.bad ? '<span>' + ts.bad + ' do poprawki</span>' : '<span>' + ts.pct + '%</span>') + '</span>' +
-        tape(ts.pct) + '</button>';
+        tape(ts.pct, ts.pctDone) + '</button>';
     });
     h += '</div></div>';
 
@@ -505,8 +520,10 @@
     if (scope !== 'all' && scope !== 'bledy') {
       var t = BANK.topics.filter(function (x) { return x.id === scope; })[0];
       var ts = topicStats(t);
-      h += '<div class="note">Opanowane: <b class="mono">' + ts.done + '/' + ts.total + '</b>. ' +
-        'Pytanie liczy się jako opanowane po dwóch poprawnych odpowiedziach z rzędu.</div>';
+      h += '<div class="note">Umiesz <b class="mono">' + ts.known + '/' + ts.total + '</b> — tyle pytań ' +
+        'ostatnio poszło dobrze (jasna część paska). <b class="mono">' + ts.done + '/' + ts.total + '</b> ' +
+        'masz opanowane, czyli trafione dwa razy z rzędu (ciemna część). Błąd cofa pytanie ' +
+        'do poprawki.</div>';
       h += '<div class="foot"><span class="sub">Kolejność pytań losowana za każdym razem</span>' +
         '<button class="linkbtn danger" data-act="ask-reset-topic">Wyzeruj temat</button></div>';
     }

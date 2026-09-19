@@ -85,7 +85,11 @@ prawidłowe” muszą zostawać na swoich miejscach. Losowana jest kolejność p
 
 ## Jak liczony jest postęp
 
-* Pytanie jest **opanowane** po dwóch poprawnych odpowiedziach z rzędu.
+* Pytanie jest **umiane** po jednej poprawnej odpowiedzi — to liczba na
+  kafelku (`x/10 umiem`) i jasna część paska. Rusza się od razu.
+* Pytanie jest **opanowane** po dwóch poprawnych odpowiedziach z rzędu — to
+  ciemna część paska. Wymaga trafienia w dwóch różnych rundach, bo w jednej
+  rundzie każde pytanie pada raz.
 * Błędna odpowiedź wrzuca pytanie do listy **do poprawki** aż do następnej
   poprawnej odpowiedzi.
 * W trybie egzaminu pytanie bez zaznaczonej odpowiedzi liczy się jako błędne.
