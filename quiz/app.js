@@ -451,7 +451,7 @@
     h += warnBox();
 
     h += '<div class="stats">' +
-      '<div class="v-good"><b class="mono">' + g.known + '</b><span>umiem</span></div>' +
+      '<div class="v-good"><b class="mono">' + g.known + '</b><span>zaliczone</span></div>' +
       '<div><b class="mono">' + g.acc + '%</b><span>skuteczność</span></div>' +
       '<div class="v-bad"><b class="mono">' + g.bad + '</b><span>do poprawki</span></div>' +
       '</div>';
@@ -474,7 +474,7 @@
       var ts = topicStats(t);
       h += '<button class="tile' + (ts.done === ts.total ? ' done' : '') + '" data-act="topic" data-id="' + t.id + '">' +
         '<span class="t-name">' + esc(t.short) + '</span>' +
-        '<span class="t-meta"><span class="mono">' + ts.known + '/' + ts.total + ' umiem</span>' +
+        '<span class="t-meta"><span class="mono">' + ts.known + '/' + ts.total + '</span>' +
         (ts.bad ? '<span>' + ts.bad + ' do poprawki</span>' : '<span>' + ts.pct + '%</span>') + '</span>' +
         tape(ts.pct, ts.pctDone) + '</button>';
     });
@@ -520,10 +520,9 @@
     if (scope !== 'all' && scope !== 'bledy') {
       var t = BANK.topics.filter(function (x) { return x.id === scope; })[0];
       var ts = topicStats(t);
-      h += '<div class="note">Umiesz <b class="mono">' + ts.known + '/' + ts.total + '</b> — tyle pytań ' +
-        'ostatnio poszło dobrze (jasna część paska). <b class="mono">' + ts.done + '/' + ts.total + '</b> ' +
-        'masz opanowane, czyli trafione dwa razy z rzędu (ciemna część). Błąd cofa pytanie ' +
-        'do poprawki.</div>';
+      h += '<div class="note">Zaliczone: <b class="mono">' + ts.known + '/' + ts.total + '</b> — ' +
+        'tyle pytań ostatnio poszło dobrze. Opanowane: <b class="mono">' + ts.done + '/' + ts.total +
+        '</b> — trafione dwa razy z rzędu. Błąd cofa pytanie do poprawki.</div>';
       h += '<div class="foot"><span class="sub">Kolejność pytań losowana za każdym razem</span>' +
         '<button class="linkbtn danger" data-act="ask-reset-topic">Wyzeruj temat</button></div>';
     }
