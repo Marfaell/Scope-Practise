@@ -40,6 +40,21 @@
   var MODE_BY_ID = {};
   MODES.forEach(function (m) { MODE_BY_ID[m.id] = m; });
 
+  /* ---------- pamięć przeglądarki ---------- */
+  /* localStorage bywa zablokowany: tryb prywatny, wyłączone dane witryn,
+     przeglądarki wbudowane w komunikatory. Sprawdzamy realnym zapisem. */
+  var storeOk = (function () {
+    try {
+      var probe = KEY + '.probe';
+      localStorage.setItem(probe, '1');
+      var back = localStorage.getItem(probe) === '1';
+      localStorage.removeItem(probe);
+      return back;
+    } catch (e) {
+      return false;
+    }
+  })();
+
   /* ---------- stan ---------- */
   var S = { stats: {}, session: null };
   var V = { view: 'home', scope: null, summary: null };
@@ -71,9 +86,23 @@
   }
 
   function save() {
+    if (!storeOk) return;
     try {
       localStorage.setItem(KEY, JSON.stringify({ v: 1, stats: S.stats, session: S.session }));
-    } catch (e) { /* tryb prywatny — gramy bez zapisu */ }
+    } catch (e) {
+      /* Pamięć padła w trakcie gry (np. przepełniona) — pokaż to zamiast milczeć. */
+      storeOk = false;
+      var box = document.getElementById('storewarn');
+      if (box) box.hidden = false;
+    }
+  }
+
+  function warnBox() {
+    return '<div class="warn" id="storewarn"' + (storeOk ? ' hidden' : '') + '>' +
+      '<b>Ta przeglądarka nie zapisuje postępu.</b> Wyniki znikną po zamknięciu karty. ' +
+      'Najczęstsza przyczyna to tryb prywatny albo przeglądarka wbudowana w Messengera, ' +
+      'Instagrama czy Facebooka. Otwórz link w Safari lub Chrome — w komunikatorze menu ' +
+      '<b>•••</b> → <b>Otwórz w przeglądarce</b>.</div>';
   }
 
   function st(id) {
@@ -401,7 +430,10 @@
 
     h += '<div><p class="eyebrow">Świadectwo kwalifikacji pilota paralotni</p>' +
       '<h1 class="h-hero">Wybierz grę<br>i sprawdź wiedzę</h1>' +
-      '<p class="sub">' + ALL.length + ' pytań w ' + BANK.topics.length + ' tematach. Postęp zapisuje się sam.</p></div>';
+      '<p class="sub">' + ALL.length + ' pytań w ' + BANK.topics.length + ' tematach.' +
+      (storeOk ? ' Postęp zapisuje się sam.' : '') + '</p></div>';
+
+    h += warnBox();
 
     h += '<div class="stats">' +
       '<div class="v-good"><b class="mono">' + g.done + '</b><span>opanowane</span></div>' +
@@ -492,6 +524,8 @@
     else right = '<span class="badge-pct mono">' + s.ok + '/' + (s.ok + s.no) + '</span>';
     var h = topbar(m.name + ' · ' + scopeName(s.scope), { back: 'home', right: right });
     h += '<main class="page">';
+
+    if (!storeOk) h += warnBox();
 
     if (s.mode === 'egzamin') {
       h += '';

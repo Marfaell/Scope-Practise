@@ -639,6 +639,18 @@ button { font: inherit; color: inherit; }
   background: linear-gradient(to top, var(--bg) 62%, transparent);
 }
 
+/* ---------- ostrzeżenie o pamięci ---------- */
+.warn {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--bad-soft);
+  border: 1px solid var(--bad);
+  border-radius: 12px;
+  padding: 12px 13px;
+}
+.warn b { color: var(--bad); }
+
 /* ---------- misc ---------- */
 .note {
   font-size: 13px;
