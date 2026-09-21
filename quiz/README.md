@@ -93,5 +93,27 @@ prawidłowe” muszą zostawać na swoich miejscach. Losowana jest kolejność p
 * Błędna odpowiedź wrzuca pytanie do listy **do poprawki** aż do następnej
   poprawnej odpowiedzi.
 * W trybie egzaminu pytanie bez zaznaczonej odpowiedzi liczy się jako błędne.
-* Postęp i przerwana runda siedzą w `localStorage` pod kluczem
-  `paralotnia.trener.v1`; przycisk „Wyzeruj postęp” czyści wszystko.
+## Jak trzymany jest postęp
+
+Trzy osobne klucze w `localStorage`, celowo rozdzielone:
+
+| klucz | zawartość |
+| --- | --- |
+| `paralotnia.trener.stats` | wyniki — dane trwałe |
+| `paralotnia.trener.bak` | poprzednia dobra kopia wyników |
+| `paralotnia.trener.session` | przerwana runda — dane ulotne |
+
+Zasady, które muszą zostać przy każdej zmianie tego kodu:
+
+* **Uszkodzony rekord nigdy nie kasuje wyników.** `readJSON` zwraca `null`
+  i zostawia rekord w spokoju; odczyt leci po kolei: `stats` → `bak` →
+  stary `paralotnia.trener.v1` (migracja).
+* **Sesja nie może uszkodzić wyników.** Cała walidacja rundy siedzi
+  w `sanitizeSession`, a jej porażka zeruje najwyżej sesję.
+* **Pusty zapis nie nadpisuje niepustych wyników.** Kasowanie idzie wyłącznie
+  przez `wipeAll()`, wołane z przycisku resetu.
+* **Kopia powstaje przed nadpisaniem**, więc urwany zapis kosztuje najwyżej
+  jedną ostatnią odpowiedź.
+* Stary wspólny rekord znika dopiero, gdy nowy format naprawdę coś zawiera.
+
+Przycisk „Wyzeruj postęp” czyści komplet kluczy razem z kopią zapasową.
