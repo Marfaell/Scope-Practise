@@ -2,7 +2,10 @@
 (function () {
   'use strict';
 
-  var KEY = 'paralotnia.trener.v1';
+  var KEY = 'paralotnia.trener.v1';        /* stary, wspólny rekord — tylko do migracji */
+  var K_STATS = 'paralotnia.trener.stats'; /* wyniki: dane trwałe */
+  var K_BAK = 'paralotnia.trener.bak';     /* poprzednia dobra kopia wyników */
+  var K_SESS = 'paralotnia.trener.session';/* przerwana runda: dane ulotne */
   var BANK = window.BANK;
   var ROUND_MIX = 20;
   var ROUND_FIX = 20;
@@ -60,40 +63,100 @@
   var V = { view: 'home', scope: null, summary: null };
   var tick = null;
 
-  function load() {
+  function readJSON(k) {
+    /* Uszkodzony rekord zwraca null i ZOSTAJE na dysku — nigdy go nie kasujemy. */
     try {
-      var raw = localStorage.getItem(KEY);
-      if (!raw) return;
-      var d = JSON.parse(raw);
-      if (d && typeof d === 'object') {
-        S.stats = d.stats && typeof d.stats === 'object' ? d.stats : {};
-        S.session = d.session || null;
-      }
-      if (S.session && (!S.session.order || !S.session.order.length)) S.session = null;
-      if (S.session) S.session.order = S.session.order.filter(function (id) { return BY_ID[id]; });
-      if (S.session) {
-        if (!S.session.answers) S.session.answers = {};
-        if (!Array.isArray(S.session.miss)) S.session.miss = [];
-        S.session.miss = S.session.miss
-          .map(function (m) { return typeof m === 'string' ? { id: m, pick: null } : m; })
-          .filter(function (m) { return m && BY_ID[m.id]; });
-        if (!MODE_BY_ID[S.session.mode]) S.session = null;
-      }
-      if (S.session && S.session.mode !== 'egzamin' && S.session.i >= S.session.order.length) S.session = null;
+      var raw = localStorage.getItem(k);
+      return raw ? JSON.parse(raw) : null;
     } catch (e) {
-      S = { stats: {}, session: null };
+      return null;
+    }
+  }
+
+  function isStats(x) {
+    return !!x && typeof x === 'object' && !Array.isArray(x);
+  }
+
+  /* Sesja jest częścią ulotną. Cokolwiek w niej nie zagra — wraca null,
+     a wyniki zostają nietknięte. */
+  function sanitizeSession(z) {
+    try {
+      if (!z || typeof z !== 'object') return null;
+      if (!Array.isArray(z.order)) return null;
+      z.order = z.order.filter(function (id) { return BY_ID[id]; });
+      if (!z.order.length) return null;
+      if (!MODE_BY_ID[z.mode]) return null;
+      if (!z.answers || typeof z.answers !== 'object') z.answers = {};
+      if (!Array.isArray(z.miss)) z.miss = [];
+      z.miss = z.miss
+        .map(function (m) { return typeof m === 'string' ? { id: m, pick: null } : m; })
+        .filter(function (m) { return m && BY_ID[m.id]; });
+      if (typeof z.i !== 'number' || z.i < 0) z.i = 0;
+      if (z.mode !== 'egzamin' && z.i >= z.order.length) return null;
+      if (z.mode === 'pf' && !z.claim) return null;
+      return z;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function load() {
+    if (!storeOk) return;
+    var stats = readJSON(K_STATS);
+    if (!isStats(stats)) stats = readJSON(K_BAK);           /* kopia zapasowa */
+    if (!isStats(stats)) {                                   /* migracja ze starego formatu */
+      var old = readJSON(KEY);
+      if (old && isStats(old.stats)) stats = old.stats;
+    }
+    S.stats = isStats(stats) ? stats : {};
+
+    var sess = readJSON(K_SESS);
+    if (!sess) {
+      var o = readJSON(KEY);
+      sess = o && o.session ? o.session : null;
+    }
+    S.session = sanitizeSession(sess);
+  }
+
+  function storeFailed() {
+    storeOk = false;
+    var box = document.getElementById('storewarn');
+    if (box) box.hidden = false;
+  }
+
+  /* Świadome wyczyszczenie: zabiera komplet kluczy, łącznie z kopią zapasową. */
+  function wipeAll() {
+    if (!storeOk) return;
+    try {
+      localStorage.removeItem(K_BAK);
+      localStorage.removeItem(K_SESS);
+      localStorage.removeItem(KEY);
+      localStorage.removeItem(K_STATS);
+    } catch (e) {
+      storeFailed();
     }
   }
 
   function save() {
     if (!storeOk) return;
     try {
-      localStorage.setItem(KEY, JSON.stringify({ v: 1, stats: S.stats, session: S.session }));
+      var json = JSON.stringify(S.stats);
+      var prev = localStorage.getItem(K_STATS);
+      /* Pusty zapis nigdy nie nadpisuje niepustych wyników. Czyszczenie idzie
+         przez wipeAll(), nie tędy. */
+      if (json === '{}' && prev && prev !== '{}') {
+        localStorage.setItem(K_SESS, JSON.stringify(S.session));
+        return;
+      }
+      /* Poprzednia dobra wersja ląduje w kopii, zanim ruszymy oryginał. */
+      if (prev && prev !== json) localStorage.setItem(K_BAK, prev);
+      localStorage.setItem(K_STATS, json);
+      localStorage.setItem(K_SESS, JSON.stringify(S.session));
+      /* Stary rekord znika dopiero, gdy nowy format naprawdę coś zawiera —
+         inaczej skasowalibyśmy źródło migracji. */
+      if (json !== '{}') localStorage.removeItem(KEY);
     } catch (e) {
-      /* Pamięć padła w trakcie gry (np. przepełniona) — pokaż to zamiast milczeć. */
-      storeOk = false;
-      var box = document.getElementById('storewarn');
-      if (box) box.hidden = false;
+      storeFailed();
     }
   }
 
@@ -864,12 +927,16 @@
     }
     if (act === 'do-reset') {
       S.stats = {}; S.session = null; dialog = null; V.summary = null;
-      save(); go('home'); return;
+      wipeAll();
+      go('home'); return;
     }
     if (act === 'do-reset-topic') {
       scopeIds(V.scope).forEach(function (id) { delete S.stats[id]; });
       if (S.session && S.session.scope === V.scope) S.session = null;
-      dialog = null; save(); render(); return;
+      dialog = null;
+      try { localStorage.removeItem(K_BAK); } catch (e) {}
+      save();
+      render(); return;
     }
   });
 
