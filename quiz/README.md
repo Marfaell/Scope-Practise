@@ -93,6 +93,7 @@ prawidłowe” muszą zostawać na swoich miejscach. Losowana jest kolejność p
 * Błędna odpowiedź wrzuca pytanie do listy **do poprawki** aż do następnej
   poprawnej odpowiedzi.
 * W trybie egzaminu pytanie bez zaznaczonej odpowiedzi liczy się jako błędne.
+
 ## Jak trzymany jest postęp
 
 Trzy osobne klucze w `localStorage`, celowo rozdzielone:
