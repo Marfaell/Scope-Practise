@@ -34,6 +34,18 @@ jest bez sensu, dlatego:
 | `styles.css` | wygląd (motyw jasny i ciemny) |
 | `index.html` | strona uruchamiająca całość — wersja samodzielna / GitHub Pages |
 | `artifact.html` | ten sam kod jako fragment publikowany jako Artifact (link do telefonu) |
+| `tests/` | testy — opis w `tests/README.md` |
+
+## Testy
+
+```
+node quiz/tests/run.js          # wszystko
+node quiz/tests/run.js bank     # tylko baza pytań, bez przeglądarki
+```
+
+`bank.test.js` uruchamiaj po każdej zmianie w `questions.js` — sprawdza
+strukturę i logikę pułapek. Zestawy `ui` i `storage` wymagają playwright;
+bez niego `run.js` przepuszcza sam `bank` i mówi, czego brakuje.
 
 ## Uruchomienie lokalne
 
